@@ -103,7 +103,7 @@ namespace CompressDB
         public static List<Standard> CompressedDB(List<Standard> VolTable, List<Standard> TestTable)
         {
             List<Standard> compressedDB = new List<Standard>();
-
+           // TODO: Productive action! I don't know what is it. 
             return compressedDB;
         }
     }
