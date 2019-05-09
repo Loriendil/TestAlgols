@@ -104,6 +104,13 @@ namespace CompressDB
 
         public static List<Standard> CompressedDB(List<Standard> VolTable, List<Standard> TestTable)
         {
+            // http://www.cyberforum.ru/csharp-beginners/thread1442293.html
+            // https://stackoverflow.com/questions/10454519/best-way-to-compare-two-complex-objects
+            // https://www.c-sharpcorner.com/article/comparing-objects-in-c-sharp/
+            // https://grantwinney.com/how-to-compare-two-objects-testing-for-equality-in-c/
+            // For TR CU 004 there 696 * 809 = 563 064 operations! It's too much! 
+            //
+
             List<Standard> compressedDB = new List<Standard>();
             // TODO: Productive action! I don't know what is it. 
             foreach (var line in VolTable)
