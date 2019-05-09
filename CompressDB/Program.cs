@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 
+
 namespace CompressDB
 {
     class Program
@@ -37,11 +38,10 @@ namespace CompressDB
 
         /*
 	    полезные ссылки: 
-	    https://ru.stackoverflow.com/questions/419718/Пересечение-и-разность-двух-listobject
-	    https://docs.microsoft.com/ru-ru/dotnet/api/system.linq.enumerable.except?redirectedfrom=MSDN&view=netframework-4.8#System_Linq_Enumerable_Except__1_System_Collections_Generic_IEnumerable___0__System_Collections_Generic_IEnumerable___0__
-	    https://docs.microsoft.com/ru-ru/dotnet/csharp/programming-guide/concepts/linq/set-operations
-	    https://docs.microsoft.com/ru-ru/dotnet/csharp/programming-guide/concepts/linq/how-to-find-the-set-difference-between-two-lists-linq
-	    */
+        https://docs.microsoft.com/en-us/dotnet/api/system.linq.enumerable.sequenceequal?redirectedfrom=MSDN&view=netframework-4.8#System_Linq_Enumerable_SequenceEqual__1_System_Collections_Generic_IEnumerable___0__System_Collections_Generic_IEnumerable___0__System_Collections_Generic_IEqualityComparer___0__
+	    https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.iequalitycomparer-1?redirectedfrom=MSDN&view=netframework-4.8
+        https://docs.microsoft.com/en-us/dotnet/api/system.linq.enumerable.except?redirectedfrom=MSDN&view=netframework-4.8#overloads
+        */
 
         public static void CreateVolAndTestLists(List<List<string>> Table, out List<Standard> VTable, out List<Standard> TTable)
         {
@@ -67,7 +67,7 @@ namespace CompressDB
                                 t.TRclause = line[0];
                                 t.TRnum = line[1];
                                 t.STclauseV = line[2];
-                                t.STnum = line[3];
+                                t.STnum = Standard.TemplatedString(line[3]);
                                 t.STname = line[4];
                                 t.Comment = line[5];
                                 t.LType = line[6];
@@ -87,7 +87,7 @@ namespace CompressDB
                                 t.TRclause = ln[0];
                                 t.TRnum = ln[1];
                                 t.STclauseT = ln[2];
-                                t.STnum = ln[3];
+                                t.STnum = Standard.TemplatedString(ln[3]);
                                 t.STname = ln[4];
                                 t.Comment = ln[5];
                                 t.LType = ln[6];
@@ -103,7 +103,10 @@ namespace CompressDB
         public static List<Standard> CompressedDB(List<Standard> VolTable, List<Standard> TestTable)
         {
             List<Standard> compressedDB = new List<Standard>();
-           // TODO: Productive action! I don't know what is it. 
+            // TODO: Productive action! I don't know what is it. 
+
+            bool equalAB = VolTable.SequenceEqual(TestTable, new StandardComparer());
+            Console.WriteLine("Equal?" + equalAB);
             return compressedDB;
         }
     }
@@ -154,9 +157,57 @@ namespace CompressDB
             return this;
         }
 
-        public string RemoveSpaces(string item)
+        public static string TemplatedString(string line)
         {
-            return Regex.Replace(item, @"\s", "");
+            line = line.Trim();
+            char[] foo = line.ToCharArray();
+            StringBuilder outp = new StringBuilder();
+            for (int i = 0; i < foo.Length; i++)
+            {
+                if (char.IsLetterOrDigit(foo[i]))
+                {
+                    outp.Append(foo[i]);
+                }
+                if (char.IsPunctuation(foo[i]))
+                {
+                    outp.Append(foo[i]);
+                }
+                if (char.IsWhiteSpace(foo[i]))
+                {
+                    if (char.IsWhiteSpace(foo[i - 1])) { continue; }
+                    if (char.IsPunctuation(foo[i - 1]) || char.IsPunctuation(foo[i + 1])) { continue; }
+                    else { outp.Append(foo[i]); }
+                }
+
+            }
+            return outp.ToString();
+        }
+    }
+
+    class StandardComparer : IEqualityComparer<Standard>
+    {
+        public bool Equals(Standard x, Standard y)
+        {
+            //Check whether the compared objects reference the same data.
+            if (Object.ReferenceEquals(x, y)) return true;
+
+            //Check whether any of the compared objects is null.
+            if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
+                return false;
+            //Check whether the products' properties are equal.
+            return x.STnum == y.STnum;
+        }
+
+        public int GetHashCode(Standard standard)
+        {
+            //Check whether the object is null
+            if (Object.ReferenceEquals(standard, null)) return 0;
+
+            //Get hash code for the Code field.
+            int hashStandardNum = standard.STnum.GetHashCode();
+
+            //Calculate the hash code for the product.
+            return hashStandardNum;
         }
     }
 }
