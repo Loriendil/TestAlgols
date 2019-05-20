@@ -13,25 +13,29 @@ namespace CompressDB
         static void Main(string[] args)
         {
             List<string> first = new List<string>
-            { " статья 4  ",  "ТР ТС 004/2011",  "раздел 1", "ГОСТ 15047 - 78", "Электроприборы нагревательные бытовые.Термины и определения",  "применяется до 31.09.2017", "free", "",  "",  "RU" };
+            { " статья 4  ",  "ТР ТС 004/2011",  "раздел 1", " ГОСТ IEC 60255 - 5 - 2014 ", "Электроприборы нагревательные бытовые.Термины и определения",  "применяется до 31.09.2017", "free", "",  "",  "RU" };
             List<string> second = new List<string>
-            { "статья 4",     "ТР ТС 004/2011",  "раздел 2", " ГОСТ 16012 - 70 ",  "Изделия бытовые электромеханические.Термины и определения ",  "", "free", "", "", "RU"};
+            { "статья 4",     "ТР ТС 004/2011",  "раздел 2", " ГОСТ IEC 16012 - 70 ",  "Изделия бытовые электромеханические.Термины и определения ",  "", "free", "", "", "RU"};
             List<string> third = new List<string>
-            { " статья 4 ", "ТР ТС 004/2011",  "раздел 3",  " ГОСТ IEC 60255 - 5 - 2014 ",  " Реле электрические.Часть 5.Координация изоляции измерительных реле и защитных устройств. Требования и испытания ",
+            { " статья 4 ", "ТР ТС 004/2011",  "раздел 3",  "ГОСТ IEC 15047 - 78",  " Реле электрические.Часть 5.Координация изоляции измерительных реле и защитных устройств. Требования и испытания ",
               "применяется до 01.10.2011",  "free",  "",  "",  "RU" };
             List<string> forth = new List<string>
-            { "статья 4", "ТР ТС 004/2011", "раздел 4",  "ГОСТ 30328 - 95",  " Реле электрические.Испытание изоляции ",  " ", "test",  "", "", "RU"};
+            { "статья 4", "ТР ТС 004/2011", "раздел 4",  "ГОСТ IEC 30328 - 95",  " Реле электрические.Испытание изоляции ",  " ", "test",  "", "", "RU"};
             List<string> fifth = new List<string>
             { " статья 4", "ТР ТС 004/2011",  "раздел 5", " ГОСТ IEC 60255 - 5 - 2014 ",  " Реле электрические.Часть 5.Координация изоляции измерительных реле и защитных устройств. Требования и испытания ",
               "",  "test", "", "", "RU"};
             List<string> sixth = new List<string>
-            { " статья 4", "ТР ТС 004/2011", "раздел 6", " ГОСТ Р IEC 60745 - 2 - 13 - 2012 ", "Машины ручные электрические. Безопасность и методы испытаний. Часть 2 - 13.Частные требования к цепным пилам ",
+            { " статья 4", "ТР ТС 004/2011", "раздел 6", " ГОСТ IEC 60745 - 2 - 13 - 2012 ", "Машины ручные электрические. Безопасность и методы испытаний. Часть 2 - 13.Частные требования к цепным пилам ",
               "", "test", "", "", "RU"};
             List<List<string>> table = new List<List<string>>() { first, second, third, forth, fifth, sixth };
 
             List<Standard> VTable = new List<Standard>();
             List<Standard> TTable = new List<Standard>();
             CreateVolAndTestLists(table, out VTable, out TTable);
+            VTable = FormatStdNum(VTable);
+            TTable = FormatStdNum(TTable);
+            var SortedVTable = VTable.OrderBy(x => x.STnum).ToList();
+            var SortedTTable = TTable.OrderBy(y => y.STnum).ToList();
             List<Standard> output = CompressedDB(VTable, TTable);
             Console.ReadKey();
         }
@@ -102,6 +106,39 @@ namespace CompressDB
             }
         }
 
+        public static List<Standard> FormatStdNum(List<Standard> Table)
+        {
+            foreach (Standard item in Table)
+            {
+                item.STnum = FormattingMethod(item.STnum);
+            }
+            return Table;
+        }
+        private static string FormattingMethod(string line)
+        {
+            line = line.Trim();
+            char[] foo = line.ToCharArray();
+            StringBuilder outp = new StringBuilder();
+            for (int i = 0; i < foo.Length; i++)
+            {
+                if (char.IsLetterOrDigit(foo[i]))
+                {
+                    outp.Append(foo[i]);
+                }
+                if (char.IsPunctuation(foo[i]))
+                {
+                    outp.Append(foo[i]);
+                }
+                if (char.IsWhiteSpace(foo[i]))
+                {
+                    if (char.IsWhiteSpace(foo[i - 1])) { continue; }
+                    if (char.IsPunctuation(foo[i - 1]) || char.IsPunctuation(foo[i + 1])) { continue; }
+                    else { outp.Append(foo[i]); }
+                }
+
+            }
+            return outp.ToString();
+        }
         public static List<Standard> CompressedDB(List<Standard> VolTable, List<Standard> TestTable)
         {
             // http://www.cyberforum.ru/csharp-beginners/thread1442293.html
@@ -174,6 +211,7 @@ namespace CompressDB
 
 
         }
+
         public class Standard : IEquatable<Standard>
         {
             #region field for properties
