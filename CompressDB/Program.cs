@@ -148,25 +148,34 @@ namespace CompressDB
             // For TR CU 004 there 696 * 809 = 563 064 operations! It's too much! 
             //
 
-            List<Standard> compressedDB = new List<Standard>();
+            // List<Standard> compressedDB = new List<Standard>();
             // TODO: Productive action! I don't know what is it. 
-            foreach (var line in VolTable)
+            
+            Console.WriteLine("\nИспользование метода расширения LINQ .Intersect():");
+            var ResultAsBase4Output = VolTable.Intersect(TestTable);
+            foreach (var st in ResultAsBase4Output)
             {
-                foreach (var ln in TestTable)
-                {
-                    if (ln.Equals(line))
-                    {
-                        Console.WriteLine("True");
-                    }
-                    else
-                    {
-                        Console.WriteLine("False");
-                    }
-                }
+                Console.WriteLine("clause: "+st.STclauseV+ " | Cipher: " + st.STnum);
             }
-            //bool equalAB = VolTable.SequenceEqual(TestTable, new StandardComparer());
-            //Console.WriteLine("Equal?" + equalAB);
-            return compressedDB;
+
+            Console.WriteLine("\n Получение симметриченой разности (А\\В)U(B\\A):");
+            var Result4Analysis = VolTable.Except(TestTable).Union(TestTable.Except(VolTable)).ToList();
+            foreach (var st in Result4Analysis)
+            {
+                Console.WriteLine("clause: " + st.STclauseV + " | Cipher: " + st.STnum);
+            }
+
+            Result4Analysis.Sort();
+            // interesting thing about sorting with different tools! 
+            // source #1: http://orydberg.azurewebsites.net/Posts/2013/4_HowToSortACSharpList.aspx
+            // source #2: https://www.c-sharpcorner.com/UploadFile/80ae1e/icomparable-icomparer-and-iequatable-interfaces-in-C-Sharp/
+            Console.WriteLine("\n Сортируем:");
+            foreach (var st in Result4Analysis)
+            {
+                Console.WriteLine("clause: " + st.STclauseV + " | Cipher: " + st.STnum);
+            }
+
+            return new List<Standard>();
         }
 
         public static void Compress()
@@ -212,7 +221,7 @@ namespace CompressDB
 
         }
 
-        public class Standard : IEquatable<Standard>
+        public class Standard : IEquatable<Standard>, IComparable<Standard>
         {
             #region field for properties
             private string tRclause = string.Empty;
@@ -286,49 +295,78 @@ namespace CompressDB
                 return outp.ToString();
             }
 
-            public override bool Equals(object obj)
-            {
-                return this.Equals(obj as Standard);
-            }
-
+            #region Equalty: Implementation of IEquatable<T>
+            // This is implemented Equals method, which you need to create when implementing the IEquatable interface.
             public bool Equals(Standard other)
             {
+                if (other == null) { return false; }
+
+                return (this.STnum == other.STnum) && (this.STclauseV == other.STclauseV);
+            }
+            // This implimented Object.Equals method, to prevent incorrect logic.
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj)) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                if (obj.GetType() != GetType()) return false;
+                return Equals(obj as Standard);
+            }
+
+            public override int GetHashCode() { return this.STnum.GetHashCode(); }
+
+            // This is overriding for equal and unequal operators to avoid boxing and unboxing when doing an equality check. 
+            public static bool operator ==(Standard stdA, Standard stdB)
+            {
+                if (object.ReferenceEquals(stdA, stdB)) return true;
+                if (object.ReferenceEquals(stdA, null)) return false;
+                if (object.ReferenceEquals(stdB, null)) return false;
+
+                return stdA.Equals(stdB);
+            }
+            public static bool operator !=(Standard stdA, Standard stdB)
+            {
+                if (object.ReferenceEquals(stdA, stdB)) return false;
+                if (object.ReferenceEquals(stdA, null)) return true;
+                if (object.ReferenceEquals(stdB, null)) return true;
+
+                return !stdA.Equals(stdB);
+            }
+            #endregion
+
+            #region Comparation: Implementation of IComparable<T>
+            public int CompareTo(Standard other)
+            {
                 if (other == null)
-                { return false; }
-                return this.STnum.Equals(other.STnum);
+                    return 1;
+                else
+                    return this.STnum.CompareTo(other.STnum);
             }
 
-            public override int GetHashCode()
+            // Define the is greater than operator.
+            public static bool operator >(Standard operand1, Standard operand2)
             {
-                return base.GetHashCode();
+                return operand1.CompareTo(operand2) == 1;
             }
-        }
 
-        class StandardComparer : IEqualityComparer<Standard>
-        {
-            public bool Equals(Standard x, Standard y)
+            // Define the is less than operator.
+            public static bool operator <(Standard operand1, Standard operand2)
             {
-                //Check whether the compared objects reference the same data.
-                if (Object.ReferenceEquals(x, y)) return true;
-
-                //Check whether any of the compared objects is null.
-                if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
-                    return false;
-                //Check whether the products' properties are equal.
-                return x.STnum == y.STnum;
+                return operand1.CompareTo(operand2) == -1;
             }
 
-            public int GetHashCode(Standard standard)
+            // Define the is greater than or equal to operator.
+            public static bool operator >=(Standard operand1, Standard operand2)
             {
-                //Check whether the object is null
-                if (Object.ReferenceEquals(standard, null)) return 0;
-
-                //Get hash code for the Code field.
-                int hashStandardNum = standard.STnum.GetHashCode();
-
-                //Calculate the hash code for the product.
-                return hashStandardNum;
+                return operand1.CompareTo(operand2) >= 0;
             }
+
+            // Define the is less than or equal to operator.
+            public static bool operator <=(Standard operand1, Standard operand2)
+            {
+                return operand1.CompareTo(operand2) <= 0;
+            }
+            #endregion
+
         }
     }
 }
