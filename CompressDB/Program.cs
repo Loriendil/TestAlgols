@@ -155,14 +155,14 @@ namespace CompressDB
             var ResultAsBase4Output = VolTable.Intersect(TestTable);
             foreach (var st in ResultAsBase4Output)
             {
-                Console.WriteLine("clause: "+st.STclauseV+ " | Cipher: " + st.STnum);
+                Console.WriteLine("clause: "+st.STclauseV+ " | Cipher: " + st.STnum + " | Type: " + st.LType);
             }
 
             Console.WriteLine("\n Получение симметриченой разности (А\\В)U(B\\A):");
             var Result4Analysis = VolTable.Except(TestTable).Union(TestTable.Except(VolTable)).ToList();
             foreach (var st in Result4Analysis)
             {
-                Console.WriteLine("clause: " + st.STclauseV + " | Cipher: " + st.STnum);
+                Console.WriteLine("| clause: " + st.STclauseV + " | Cipher: " + st.STnum + " | Type: "+st.LType);
             }
 
             Result4Analysis.Sort();
@@ -172,54 +172,54 @@ namespace CompressDB
             Console.WriteLine("\n Сортируем:");
             foreach (var st in Result4Analysis)
             {
-                Console.WriteLine("clause: " + st.STclauseV + " | Cipher: " + st.STnum);
+                Console.WriteLine("clause: " + st.STclauseV + " | Cipher: " + st.STnum + " | Type: " + st.LType);
             }
 
             return new List<Standard>();
         }
 
-        public static void Compress()
-        {
-            Standard s1 = new Standard();
+        //public static void Compress()
+        //{
+        //    Standard s1 = new Standard();
 
-            s1.TRclause = "статья 4";
-            s1.TRnum = "ТР ТС 004/2011";
-            s1.STclauseV = "раздел 1";
-            s1.STclauseT = string.Empty;
-            s1.STnum = "ГОСТ 15047 - 78";
-            s1.STname = "Электроприборы нагревательные бытовые.Термины и определения";
-            s1.Comment = "применяется до 31.09.2017";
-            s1.ExpirDateTR = string.Empty;
-            s1.ExpirDateFSA = string.Empty;
-            s1.ExpirDatePubl = string.Empty;
-            s1.LType = "free";
-            s1.LComGrp = string.Empty;
-            s1.LSpGrp = string.Empty;
-            s1.STsource = "RU";
+        //    s1.TRclause = "статья 4";
+        //    s1.TRnum = "ТР ТС 004/2011";
+        //    s1.STclauseV = "раздел 1";
+        //    s1.STclauseT = string.Empty;
+        //    s1.STnum = "ГОСТ 15047 - 78";
+        //    s1.STname = "Электроприборы нагревательные бытовые.Термины и определения";
+        //    s1.Comment = "применяется до 31.09.2017";
+        //    s1.ExpirDateTR = string.Empty;
+        //    s1.ExpirDateFSA = string.Empty;
+        //    s1.ExpirDatePubl = string.Empty;
+        //    s1.LType = "free";
+        //    s1.LComGrp = string.Empty;
+        //    s1.LSpGrp = string.Empty;
+        //    s1.STsource = "RU";
 
-            Standard s2 = new Standard();
+        //    Standard s2 = new Standard();
 
-            s2.TRclause = "статья 4";
-            s2.TRnum = "ТР ТС 004/2011";
-            s2.STclauseV = string.Empty;
-            s2.STclauseT = "раздел 6" ;
-            s2.STnum = " ГОСТ Р IEC 60745 - 2 - 13 - 2012 ";
-            s2.STname = "Машины ручные электрические. Безопасность и методы испытаний. Часть 2 - 13.Частные требования к цепным пилам ";
-            s2.Comment = string.Empty;
-            s2.ExpirDateTR = string.Empty;
-            s2.ExpirDateFSA = string.Empty;
-            s2.ExpirDatePubl = string.Empty;
-            s2.LType = "test";
-            s2.LComGrp = string.Empty;
-            s2.LSpGrp = string.Empty;
-            s2.STsource = "RU";
+        //    s2.TRclause = "статья 4";
+        //    s2.TRnum = "ТР ТС 004/2011";
+        //    s2.STclauseV = string.Empty;
+        //    s2.STclauseT = "раздел 6" ;
+        //    s2.STnum = " ГОСТ Р IEC 60745 - 2 - 13 - 2012 ";
+        //    s2.STname = "Машины ручные электрические. Безопасность и методы испытаний. Часть 2 - 13.Частные требования к цепным пилам ";
+        //    s2.Comment = string.Empty;
+        //    s2.ExpirDateTR = string.Empty;
+        //    s2.ExpirDateFSA = string.Empty;
+        //    s2.ExpirDatePubl = string.Empty;
+        //    s2.LType = "test";
+        //    s2.LComGrp = string.Empty;
+        //    s2.LSpGrp = string.Empty;
+        //    s2.STsource = "RU";
 
-            Console.WriteLine(s1.Equals(s2));
+        //    Console.WriteLine(s1.Equals(s2));
 
-            Console.ReadKey();
+        //    Console.ReadKey();
 
 
-        }
+        //}
 
         public class Standard : IEquatable<Standard>, IComparable<Standard>
         {
