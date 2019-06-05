@@ -15,7 +15,7 @@ namespace CompressDB
             List<string> first = new List<string>
             { " статья 4  ",  "ТР ТС 004/2011",  "раздел 1", " ГОСТ IEC 60255 - 5 - 2014 ", "Электроприборы нагревательные бытовые.Термины и определения",  "применяется до 31.09.2017", "free", "",  "",  "RU" };
             List<string> second = new List<string>
-            { "статья 4",     "ТР ТС 004/2011",  "раздел 2", " ГОСТ IEC 16012 - 70 ",  "Изделия бытовые электромеханические.Термины и определения ",  "", "free", "", "", "RU"};
+            { "статья 4",     "ТР ТС 004/2011",  "раздел 2", "  ГОСТ IEC 60745 - 2 - 13 - 2012 ",  "Изделия бытовые электромеханические.Термины и определения ",  "", "free", "", "", "RU"};
             List<string> third = new List<string>
             { " статья 4 ", "ТР ТС 004/2011",  "раздел 3",  "ГОСТ IEC 15047 - 78",  " Реле электрические.Часть 5.Координация изоляции измерительных реле и защитных устройств. Требования и испытания ",
               "применяется до 01.10.2011",  "free",  "",  "",  "RU" };
@@ -37,6 +37,11 @@ namespace CompressDB
             var SortedVTable = VTable.OrderBy(x => x.STnum).ToList();
             var SortedTTable = TTable.OrderBy(y => y.STnum).ToList();
             List<Standard> output = CompressedDB(VTable, TTable);
+            Console.WriteLine("\nВывод output после отработки второго метода:");
+            foreach (var st in output)
+            {
+                 Console.WriteLine("clause: " + st.STclauseV + " clause: " + st.STclauseT + " | Cipher: " + st.STnum + " | Type: " + st.LType); 
+            }
             Console.ReadKey();
         }
 
@@ -146,80 +151,58 @@ namespace CompressDB
             // https://www.c-sharpcorner.com/article/comparing-objects-in-c-sharp/
             // https://grantwinney.com/how-to-compare-two-objects-testing-for-equality-in-c/
             // For TR CU 004 there 696 * 809 = 563 064 operations! It's too much! 
-            //
-
-            // List<Standard> compressedDB = new List<Standard>();
             // TODO: Productive action! I don't know what is it. 
-            
-            Console.WriteLine("\nИспользование метода расширения LINQ .Intersect():");
-            var ResultAsBase4Output = VolTable.Intersect(TestTable);
-            foreach (var st in ResultAsBase4Output)
-            {
-                Console.WriteLine("clause: "+st.STclauseV+ " | Cipher: " + st.STnum + " | Type: " + st.LType);
-            }
 
-            Console.WriteLine("\n Получение симметриченой разности (А\\В)U(B\\A):");
-            var Result4Analysis = VolTable.Except(TestTable).Union(TestTable.Except(VolTable)).ToList();
-            foreach (var st in Result4Analysis)
-            {
-                Console.WriteLine("| clause: " + st.STclauseV + " | Cipher: " + st.STnum + " | Type: "+st.LType);
-            }
-
-            Result4Analysis.Sort();
-            // interesting thing about sorting with different tools! 
-            // source #1: http://orydberg.azurewebsites.net/Posts/2013/4_HowToSortACSharpList.aspx
-            // source #2: https://www.c-sharpcorner.com/UploadFile/80ae1e/icomparable-icomparer-and-iequatable-interfaces-in-C-Sharp/
-            Console.WriteLine("\n Сортируем:");
-            foreach (var st in Result4Analysis)
+            Console.WriteLine("\nИсходная матрица:");
+            Console.WriteLine("\n Добровольная таблица");
+            foreach (var st in VolTable)
             {
                 Console.WriteLine("clause: " + st.STclauseV + " | Cipher: " + st.STnum + " | Type: " + st.LType);
             }
+            Console.WriteLine("\n Тестовая таблица");
+            foreach (var st in TestTable)
+            {
+                Console.WriteLine("clause: " + st.STclauseT + " | Cipher: " + st.STnum + " | Type: " + st.LType);
+            }
 
-            return new List<Standard>();
+            Console.WriteLine("\nИспользование метода расширения LINQ .Intersect():");
+            var Source4Analysis = VolTable.Intersect(TestTable);
+
+            foreach (var st in Source4Analysis)
+            {
+                if (st.LType == "free")
+                { Console.WriteLine("clause: " + st.STclauseV + " | Cipher: " + st.STnum + " | Type: " + st.LType); }
+                else
+                { Console.WriteLine("clause: " + st.STclauseT + " | Cipher: " + st.STnum + " | Type: " + st.LType); }
+            } 
+
+            TestTable.Sort();
+            // interesting thing about sorting with different tools! 
+            // source #1: http://orydberg.azurewebsites.net/Posts/2013/4_HowToSortACSharpList.aspx
+            // source #2: https://www.c-sharpcorner.com/UploadFile/80ae1e/icomparable-icomparer-and-iequatable-interfaces-in-C-Sharp/
+
+            Console.WriteLine("\nСортируем:");
+            foreach (var st in TestTable)
+            {
+                if (st.LType == "free")
+                { Console.WriteLine("clause: " + st.STclauseV + " | Cipher: " + st.STnum + " | Type: " + st.LType); }
+                else
+                { Console.WriteLine("clause: " + st.STclauseT + " | Cipher: " + st.STnum + " | Type: " + st.LType); }
+            }
+
+            foreach (var line in Source4Analysis)
+            {
+                Standard temp = TestTable.Find(g=>g.STnum==line.STnum);
+                line.STclauseV += temp.STclauseV;
+                line.STclauseT += temp.STclauseT;
+                line.LType = line.LType+ ";"+ temp.LType;
+            }
+            List<Standard> end = new List<Standard>();
+            end.AddRange(VolTable);
+            end.AddRange(TestTable);
+            List<Standard> result = end.Distinct(new StandardComparer()).ToList();
+            return result;
         }
-
-        //public static void Compress()
-        //{
-        //    Standard s1 = new Standard();
-
-        //    s1.TRclause = "статья 4";
-        //    s1.TRnum = "ТР ТС 004/2011";
-        //    s1.STclauseV = "раздел 1";
-        //    s1.STclauseT = string.Empty;
-        //    s1.STnum = "ГОСТ 15047 - 78";
-        //    s1.STname = "Электроприборы нагревательные бытовые.Термины и определения";
-        //    s1.Comment = "применяется до 31.09.2017";
-        //    s1.ExpirDateTR = string.Empty;
-        //    s1.ExpirDateFSA = string.Empty;
-        //    s1.ExpirDatePubl = string.Empty;
-        //    s1.LType = "free";
-        //    s1.LComGrp = string.Empty;
-        //    s1.LSpGrp = string.Empty;
-        //    s1.STsource = "RU";
-
-        //    Standard s2 = new Standard();
-
-        //    s2.TRclause = "статья 4";
-        //    s2.TRnum = "ТР ТС 004/2011";
-        //    s2.STclauseV = string.Empty;
-        //    s2.STclauseT = "раздел 6" ;
-        //    s2.STnum = " ГОСТ Р IEC 60745 - 2 - 13 - 2012 ";
-        //    s2.STname = "Машины ручные электрические. Безопасность и методы испытаний. Часть 2 - 13.Частные требования к цепным пилам ";
-        //    s2.Comment = string.Empty;
-        //    s2.ExpirDateTR = string.Empty;
-        //    s2.ExpirDateFSA = string.Empty;
-        //    s2.ExpirDatePubl = string.Empty;
-        //    s2.LType = "test";
-        //    s2.LComGrp = string.Empty;
-        //    s2.LSpGrp = string.Empty;
-        //    s2.STsource = "RU";
-
-        //    Console.WriteLine(s1.Equals(s2));
-
-        //    Console.ReadKey();
-
-
-        //}
 
         public class Standard : IEquatable<Standard>, IComparable<Standard>
         {
@@ -301,7 +284,7 @@ namespace CompressDB
             {
                 if (other == null) { return false; }
 
-                return (this.STnum == other.STnum) && (this.STclauseV == other.STclauseV);
+                return (this.STnum == other.STnum) && (this.STclauseV == other.STclauseT);
             }
             // This implimented Object.Equals method, to prevent incorrect logic.
             public override bool Equals(object obj)
@@ -368,5 +351,33 @@ namespace CompressDB
             #endregion
 
         }
+        
+        public class StandardComparer: IEqualityComparer<Standard>
+        {
+            #region Comparer: Implimentation of IComparer<T>
+            public bool Equals(Standard stdA, Standard stdB)
+            {
+                if (stdA == null && stdB == null)
+                {
+                    return true;
+                }
+                else if (stdA == null || stdB == null)
+                {
+                    return false;
+                }
+                else if (stdA.STnum == stdB.STnum)
+                {
+                    return true;
+                }
+                else
+                { return false; }
+            }
+            public int GetHashCode(Standard std)
+            {
+                return GetHashCode();
+            }
+            #endregion
+        }
+
     }
 }
